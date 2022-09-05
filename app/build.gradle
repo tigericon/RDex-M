@@ -1,0 +1,79 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+    defaultConfig {
+        applicationId "com.alien.rdex"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                abiFilters 'armeabi-v7a'
+            }
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file('script/hermes_key')
+            storePassword "hermes"
+            keyAlias "hermes"
+            keyPassword "hermes"
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "release") {
+                outputFileName = "RDex_v${variant.versionName}_release.apk"
+            } else {
+                outputFileName = "RDex_v${variant.versionName}_debug.apk"
+            }
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+
+    api(name: 'com.camel.api_1.4.4', ext: 'aar')
+    compileOnly 'de.robv.android.xposed:api:82'
+}
